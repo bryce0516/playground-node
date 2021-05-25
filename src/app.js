@@ -1,7 +1,7 @@
 const express = require("express");
 const path = require("path");
 const hbs = require("hbs");
-const url = require("../url");
+const { url, geoUrl } = require("../url");
 const weather = require("../weather");
 const request = require("request");
 
@@ -34,12 +34,14 @@ app.get("/about", (req, res) => {
 });
 
 app.get("/weather", (req, res) => {
+  request({ url: geoUrl, json: true }, (error, response) => {
+    console.log(response.body.features[0].center);
+  });
   if (!req.query.address) {
     return res.send({
       error: "You must provide an address",
     });
   }
-
   request({ url: url, json: true }, (error, response) => {
     const resVal = response.body.current;
     if (error) {
