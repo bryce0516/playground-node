@@ -1,9 +1,9 @@
 const express = require("express");
 const path = require("path");
 const hbs = require("hbs");
-
-console.log(__dirname);
-console.log(path.join(__dirname, "../public"));
+const url = require("../url");
+const weather = require("../weather");
+const request = require("request");
 
 const app = express();
 
@@ -25,6 +25,7 @@ app.get("", (req, res) => {
 app.get("/help", (req, res) => {
   res.render("help", {
     title: "help",
+    name: "hyesung",
   });
 });
 
@@ -33,7 +34,51 @@ app.get("/about", (req, res) => {
 });
 
 app.get("/weather", (req, res) => {
-  res.send("Your weather");
+  if (!req.query.address) {
+    return res.send({
+      error: "You must provide an address",
+    });
+  }
+
+  request({ url: url, json: true }, (error, response) => {
+    const resVal = response.body.current;
+    if (error) {
+      console.log("this application has error", error);
+    } else {
+      res.send({
+        forecast: "Your weather",
+        location: "seoul",
+        address: req.query.address,
+        weatherValue: `${resVal.weather_descriptions[0]} it is currently ${resVal.temperature} degree out. there is a ${resVal.precip} change per rain`,
+      });
+    }
+  });
+});
+
+app.get("/products", (req, res) => {
+  if (!req.query.search) {
+    res.send({
+      error: "you must provide a search term",
+    });
+  }
+  res.send({
+    products: [req.query.search],
+  });
+});
+
+app.get("/help/*", (req, res) => {
+  res.render("404", {
+    title: "404",
+    name: "hyesung",
+    errorMessage: "Help article not found",
+  });
+});
+app.get("*", (req, res) => {
+  res.render("404", {
+    title: "404",
+    name: "hyesung",
+    errorMessage: "Page not found",
+  });
 });
 
 app.listen(3000, () => {
